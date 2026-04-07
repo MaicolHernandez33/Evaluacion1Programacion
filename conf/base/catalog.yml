@@ -23,4 +23,4 @@ vehiculos:
   filepath: data/01_raw/vehiculos.csv
 
 envios_raw_checked:
-  type: kedro_datasets.pandas.MemoryDataset
+  type: kedro.io.MemoryDataset

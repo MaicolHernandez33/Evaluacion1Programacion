@@ -1,0 +1,26 @@
+# Here you can define all your datasets by using simple YAML syntax.
+#
+# Documentation for this file format can be found in "The Data Catalog"
+# Link: https://docs.kedro.org/en/stable/catalog-data/introduction/#data-catalog
+
+
+
+
+envios:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/01_raw/envios.csv
+
+incidencias:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/01_raw/incidencias.csv
+
+rutas:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/01_raw/rutas.csv
+
+vehiculos:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/01_raw/vehiculos.csv
+
+envios_raw_checked:
+  type: kedro_datasets.pandas.MemoryDataset

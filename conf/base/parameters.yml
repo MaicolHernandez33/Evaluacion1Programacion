@@ -1,0 +1,59 @@
+# =========================
+# PARÁMETROS GENERALES
+# =========================
+
+random_state: 42
+
+# =========================
+# PARÁMETROS DE LIMPIEZA
+# =========================
+
+estrategia_numerica: "mediana"
+estrategia_categorica: "desconocido"
+
+columnas_fecha_envios:
+  - fecha_envio
+  - fecha_entrega
+
+columnas_fecha_incidencias:
+  - fecha_incidencia
+
+columnas_texto_envios:
+  - tipo_carga
+  - estado
+
+columnas_texto_rutas:
+  - origen
+  - destino
+  - tipo_via
+
+columnas_texto_vehiculos:
+  - placa
+  - tipo
+  - estado_vehiculo
+
+columnas_texto_incidencias:
+  - tipo_incidencia
+  - gravedad
+
+# =========================
+# PARÁMETROS DE VALIDACIÓN
+# =========================
+
+columnas_obligatorias_dataset_final:
+  - id_envio
+  - id_ruta
+  - id_vehiculo
+  - peso_kg
+  - estado
+  - distancia_km
+  - tiempo_estimado_hrs
+  - capacidad_kg
+  - estado_vehiculo
+
+# =========================
+# PARÁMETROS PARA EVA 2
+# =========================
+
+variable_objetivo_clasificacion: "entrega_tardia"
+variable_objetivo_regresion: "dias_entrega"

@@ -1,40 +1,33 @@
-from kedro.pipeline import Pipeline, node
-from .nodes import limpiar_envios, limpiar_rutas, limpiar_vehiculos
-from .nodes import transformar_datos, validar_datos
+"""Registro de pipelines del proyecto Kedro."""
 
-def create_pipeline(**kwargs) -> Pipeline:
-    return Pipeline([
-        # Limpieza
-        node(
-            func=limpiar_envios,
-            inputs="envios",
-            outputs="envios_clean",
-            name="limpiar_envios_node"
+from kedro.pipeline import Pipeline
+
+from evaluacion1.pipelines import (
+    data_ingestion,
+    data_cleaning,
+    data_transform,
+    data_validation,
+)
+
+
+def register_pipelines() -> dict[str, Pipeline]:
+    """Registra todos los pipelines disponibles."""
+
+    ingestion_pipeline = data_ingestion.create_pipeline()
+    cleaning_pipeline = data_cleaning.create_pipeline()
+    transform_pipeline = data_transform.create_pipeline()
+    validation_pipeline = data_validation.create_pipeline()
+
+    return {
+        "ingestion": ingestion_pipeline,
+        "cleaning": cleaning_pipeline,
+        "transform": transform_pipeline,
+        "validation": validation_pipeline,
+
+        "__default__": (
+            ingestion_pipeline
+            + cleaning_pipeline
+            + transform_pipeline
+            + validation_pipeline
         ),
-        node(
-            func=limpiar_rutas,
-            inputs="rutas",
-            outputs="rutas_clean",
-            name="limpiar_rutas_node"
-        ),
-        node(
-            func=limpiar_vehiculos,
-            inputs="vehiculos",
-            outputs="vehiculos_clean",
-            name="limpiar_vehiculos_node"
-        ),
-        # Transformación
-        node(
-            func=transformar_datos,
-            inputs=["envios_clean", "rutas_clean", "vehiculos_clean"],
-            outputs="dataset_final",
-            name="transformar_datos_node"
-        ),
-        # Validación
-        node(
-            func=validar_datos,
-            inputs="dataset_final",
-            outputs="dataset_final_validado",
-            name="validar_datos_node"
-        )
-    ])
+    }

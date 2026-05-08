@@ -1,26 +1,168 @@
-# Here you can define all your datasets by using simple YAML syntax.
-#
-# Documentation for this file format can be found in "The Data Catalog"
-# Link: https://docs.kedro.org/en/stable/catalog-data/introduction/#data-catalog
-
-
-
+# ======================================================
+# RAW DATA
+# ======================================================
 
 envios:
   type: kedro_datasets.pandas.CSVDataset
   filepath: data/01_raw/envios.csv
 
-incidencias:
-  type: kedro_datasets.pandas.CSVDataset
-  filepath: data/01_raw/incidencias.csv
+  load_args:
+    encoding: utf-8
+    encoding_errors: replace
+
 
 rutas:
   type: kedro_datasets.pandas.CSVDataset
   filepath: data/01_raw/rutas.csv
 
+  load_args:
+    encoding: utf-8
+    encoding_errors: replace
+
+
 vehiculos:
   type: kedro_datasets.pandas.CSVDataset
   filepath: data/01_raw/vehiculos.csv
 
-envios_raw_checked:
-  type: kedro.io.MemoryDataset
+  load_args:
+    encoding: utf-8
+    encoding_errors: replace
+
+
+incidencias:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/01_raw/incidencias.csv
+
+  load_args:
+    encoding: utf-8
+    encoding_errors: replace
+
+
+# ======================================================
+# REPORTES
+# ======================================================
+
+reporte_ingestion:
+  type: kedro_datasets.json.JSONDataset
+  filepath: data/08_reporting/reporte_ingestion.json
+
+
+reporte_validacion:
+  type: kedro_datasets.json.JSONDataset
+  filepath: data/08_reporting/reporte_validacion.json
+
+
+# ======================================================
+# CLEAN DATA
+# ======================================================
+
+envios_clean:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/02_intermediate/envios_clean.csv
+
+  load_args:
+    encoding: utf-8
+    encoding_errors: replace
+
+  save_args:
+    index: False
+
+  fs_args:
+    open_args_save:
+      mode: w
+      encoding: utf-8
+      errors: replace
+
+
+rutas_clean:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/02_intermediate/rutas_clean.csv
+
+  load_args:
+    encoding: utf-8
+    encoding_errors: replace
+
+  save_args:
+    index: False
+
+  fs_args:
+    open_args_save:
+      mode: w
+      encoding: utf-8
+      errors: replace
+
+
+vehiculos_clean:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/02_intermediate/vehiculos_clean.csv
+
+  load_args:
+    encoding: utf-8
+    encoding_errors: replace
+
+  save_args:
+    index: False
+
+  fs_args:
+    open_args_save:
+      mode: w
+      encoding: utf-8
+      errors: replace
+
+
+incidencias_clean:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/02_intermediate/incidencias_clean.csv
+
+  load_args:
+    encoding: utf-8
+    encoding_errors: replace
+
+  save_args:
+    index: False
+
+  fs_args:
+    open_args_save:
+      mode: w
+      encoding: utf-8
+      errors: replace
+
+
+# ======================================================
+# DATASETS FINALES
+# ======================================================
+
+dataset_integrado:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/03_primary/dataset_integrado.csv
+
+  load_args:
+    encoding: utf-8
+    encoding_errors: replace
+
+  save_args:
+    index: False
+
+  fs_args:
+    open_args_save:
+      mode: w
+      encoding: utf-8
+      errors: replace
+
+
+dataset_modelo:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/05_model_input/dataset_modelo.csv
+
+  load_args:
+    encoding: utf-8
+    encoding_errors: replace
+
+  save_args:
+    index: False
+
+  fs_args:
+    open_args_save:
+      mode: w
+      encoding: utf-8
+      errors: replace

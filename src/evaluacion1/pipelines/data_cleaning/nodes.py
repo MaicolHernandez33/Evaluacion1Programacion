@@ -1,78 +1,178 @@
 import pandas as pd
-
-def limpiar_envios(df_envios: pd.DataFrame) -> pd.DataFrame:
-    
-    # eliminar filas sin id_envio
-    df_envios = df_envios.dropna(subset=["id_envio"])
-    
-    # convertir peso a numérico
-    df_envios["peso_kg"] = pd.to_numeric(df_envios["peso_kg"], errors="coerce")
-    
-    # rellenar nulos en peso con la media
-    df_envios["peso_kg"] = df_envios["peso_kg"].fillna(df_envios["peso_kg"].mean())
-    
-    # convertir fechas
-    df_envios["fecha_envio"] = pd.to_datetime(df_envios["fecha_envio"], errors="coerce")
-    df_envios["fecha_entrega"] = pd.to_datetime(df_envios["fecha_entrega"], errors="coerce")
-    
-    # normalizar texto
-    df_envios["tipo_carga"] = df_envios["tipo_carga"].str.lower()
-    df_envios["estado"] = df_envios["estado"].str.lower()
-    
-    return df_envios
+import numpy as np
 
 
-def limpiar_rutas(df_rutas: pd.DataFrame) -> pd.DataFrame:
-    
-    # eliminar filas sin id
-    df_rutas = df_rutas.dropna(subset=["id_ruta"])
-    
-    # convertir id a int
-    df_rutas["id_ruta"] = df_rutas["id_ruta"].astype(int)
-    
-    # rellenar nulos numéricos
-    df_rutas["distancia_km"] = df_rutas["distancia_km"].fillna(df_rutas["distancia_km"].mean())
-    df_rutas["tiempo_estimado_hrs"] = df_rutas["tiempo_estimado_hrs"].fillna(df_rutas["tiempo_estimado_hrs"].mean())
-    df_rutas["peaje_total"] = df_rutas["peaje_total"].fillna(df_rutas["peaje_total"].mean())
-    
-    # rellenar categóricos
-    df_rutas["origen"] = df_rutas["origen"].fillna("desconocido")
-    df_rutas["destino"] = df_rutas["destino"].fillna("desconocido")
-    df_rutas["tipo_via"] = df_rutas["tipo_via"].fillna("desconocido")
-    
-    # limpiar strings
-    df_rutas["origen"] = df_rutas["origen"].str.lower().str.strip()
-    df_rutas["destino"] = df_rutas["destino"].str.lower().str.strip()
-    df_rutas["tipo_via"] = df_rutas["tipo_via"].str.lower().str.strip()
-    
-    # eliminar duplicados
-    df_rutas = df_rutas.drop_duplicates()
-    
-    return df_rutas
+# ======================================================
+# FUNCIONES GENERALES
+# ======================================================
+
+def eliminar_duplicados(df: pd.DataFrame) -> pd.DataFrame:
+    """Elimina filas duplicadas del DataFrame."""
+
+    df = df.copy()
+    df = df.drop_duplicates()
+
+    return df
 
 
-def limpiar_vehiculos(df_vehiculos: pd.DataFrame) -> pd.DataFrame:
-    
-    # eliminar filas sin id_vehiculo
-    df_vehiculos = df_vehiculos.dropna(subset=["id_vehiculo"])
-    
-    # convertir id a entero
-    df_vehiculos["id_vehiculo"] = df_vehiculos["id_vehiculo"].astype(int)
-    
-    # rellenar nulos numéricos con la media
-    for col in ["capacidad_kg", "capacidad_m3", "año_fabricacion", "km_recorridos"]:
-        df_vehiculos[col] = df_vehiculos[col].fillna(df_vehiculos[col].mean())
-    
-    # rellenar categóricos
-    df_vehiculos["placa"] = df_vehiculos["placa"].fillna("desconocida")
-    df_vehiculos["tipo"] = df_vehiculos["tipo"].fillna("desconocido")
-    df_vehiculos["estado_vehiculo"] = df_vehiculos["estado_vehiculo"].fillna("desconocido")
-    
-    # limpiar strings
-    for col in ["placa", "tipo", "estado_vehiculo"]:
-        df_vehiculos[col] = df_vehiculos[col].str.lower().str.strip()
-    
-    # eliminar duplicados
-    df_vehiculos = df_vehiculos.drop_duplicates()
-    
-    return df_vehiculos
+def limpiar_texto(df: pd.DataFrame, columnas: list) -> pd.DataFrame:
+    """Limpia espacios, caracteres corruptos y normaliza texto."""
+
+    df = df.copy()
+
+    for col in columnas:
+        if col in df.columns:
+            df[col] = (
+                df[col]
+                .astype(str)
+                .str.encode("utf-8", errors="ignore")
+                .str.decode("utf-8", errors="ignore")
+                .str.strip()
+                .str.lower()
+            )
+
+            df[col] = df[col].replace(
+                {
+                    "nan": np.nan,
+                    "none": np.nan,
+                    "": np.nan,
+                }
+            )
+
+    return df
+
+
+def convertir_fechas(df: pd.DataFrame, columnas: list) -> pd.DataFrame:
+    """Convierte columnas de texto a formato fecha."""
+
+    df = df.copy()
+
+    for col in columnas:
+        if col in df.columns:
+            df[col] = pd.to_datetime(
+                df[col],
+                errors="coerce",
+                dayfirst=True,
+            )
+
+    return df
+
+
+def tratar_nulos(df: pd.DataFrame) -> pd.DataFrame:
+    """Imputa valores nulos en columnas numéricas y categóricas."""
+
+    df = df.copy()
+
+    columnas_numericas = df.select_dtypes(
+        include=[np.number]
+    ).columns
+
+    columnas_texto = df.select_dtypes(
+        include=["object"]
+    ).columns
+
+    for col in columnas_numericas:
+        mediana = df[col].median()
+        df[col] = df[col].fillna(mediana)
+
+    for col in columnas_texto:
+        moda = df[col].mode()
+
+        if not moda.empty:
+            df[col] = df[col].fillna(moda[0])
+        else:
+            df[col] = df[col].fillna("desconocido")
+
+    return df
+
+
+def limpiar_numero_desde_texto(serie: pd.Series) -> pd.Series:
+    """Convierte valores numéricos almacenados como texto a float."""
+
+    serie_limpia = (
+        serie
+        .astype(str)
+        .str.encode("utf-8", errors="ignore")
+        .str.decode("utf-8", errors="ignore")
+        .str.replace(r"[^0-9.-]", "", regex=True)
+    )
+
+    return pd.to_numeric(serie_limpia, errors="coerce")
+
+
+# ======================================================
+# LIMPIEZA ESPECÍFICA POR DATASET
+# ======================================================
+
+def limpiar_envios(
+    envios: pd.DataFrame,
+    columnas_fecha: list,
+    columnas_texto: list,
+) -> pd.DataFrame:
+    """Limpia el dataset de envíos."""
+
+    envios = envios.copy()
+
+    envios = eliminar_duplicados(envios)
+    envios = limpiar_texto(envios, columnas_texto)
+    envios = convertir_fechas(envios, columnas_fecha)
+
+    if "peso_kg" in envios.columns:
+        envios["peso_kg"] = limpiar_numero_desde_texto(envios["peso_kg"])
+
+    envios = tratar_nulos(envios)
+
+    return envios
+
+
+def limpiar_rutas(
+    rutas: pd.DataFrame,
+    columnas_texto: list,
+) -> pd.DataFrame:
+    """Limpia el dataset de rutas."""
+
+    rutas = rutas.copy()
+
+    rutas = eliminar_duplicados(rutas)
+    rutas = limpiar_texto(rutas, columnas_texto)
+    rutas = tratar_nulos(rutas)
+
+    return rutas
+
+
+def limpiar_vehiculos(
+    vehiculos: pd.DataFrame,
+    columnas_texto: list,
+) -> pd.DataFrame:
+    """Limpia el dataset de vehículos."""
+
+    vehiculos = vehiculos.copy()
+
+    vehiculos = eliminar_duplicados(vehiculos)
+    vehiculos = limpiar_texto(vehiculos, columnas_texto)
+    vehiculos = tratar_nulos(vehiculos)
+
+    return vehiculos
+
+
+def limpiar_incidencias(
+    incidencias: pd.DataFrame,
+    columnas_fecha: list,
+    columnas_texto: list,
+) -> pd.DataFrame:
+    """Limpia el dataset de incidencias."""
+
+    incidencias = incidencias.copy()
+
+    incidencias = eliminar_duplicados(incidencias)
+    incidencias = limpiar_texto(incidencias, columnas_texto)
+    incidencias = convertir_fechas(incidencias, columnas_fecha)
+
+    if "costo_impacto" in incidencias.columns:
+        incidencias["costo_impacto"] = limpiar_numero_desde_texto(
+            incidencias["costo_impacto"]
+        )
+
+    incidencias = tratar_nulos(incidencias)
+
+    return incidencias

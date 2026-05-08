@@ -1,27 +1,74 @@
-from kedro.pipeline import Pipeline, node
-from .nodes import limpiar_envios, limpiar_rutas, limpiar_vehiculos
+from kedro.pipeline import Pipeline, node, pipeline
+
+from .nodes import (
+    limpiar_envios,
+    limpiar_rutas,
+    limpiar_vehiculos,
+    limpiar_incidencias,
+)
+
 
 def create_pipeline(**kwargs) -> Pipeline:
-    return Pipeline([
-        # Nodo para limpiar envíos
+    """Pipeline de limpieza de datos."""
+
+    return pipeline([
+
+        # ==================================================
+        # ENVIOS
+        # ==================================================
+
         node(
             func=limpiar_envios,
-            inputs="envios",
+            inputs=[
+                "envios",
+                "params:columnas_fecha_envios",
+                "params:columnas_texto_envios"
+            ],
             outputs="envios_clean",
-            name="limpiar_envios_node"
+            name="limpiar_envios_node",
         ),
-        # Nodo para limpiar rutas
+
+        # ==================================================
+        # RUTAS
+        # ==================================================
+
         node(
             func=limpiar_rutas,
-            inputs="rutas",
+            inputs=[
+                "rutas",
+                "params:columnas_texto_rutas"
+            ],
             outputs="rutas_clean",
-            name="limpiar_rutas_node"
+            name="limpiar_rutas_node",
         ),
-        # Nodo para limpiar vehículos
+
+        # ==================================================
+        # VEHICULOS
+        # ==================================================
+
         node(
             func=limpiar_vehiculos,
-            inputs="vehiculos",
+            inputs=[
+                "vehiculos",
+                "params:columnas_texto_vehiculos"
+            ],
             outputs="vehiculos_clean",
-            name="limpiar_vehiculos_node"
+            name="limpiar_vehiculos_node",
         ),
+
+        # ==================================================
+        # INCIDENCIAS
+        # ==================================================
+
+        node(
+            func=limpiar_incidencias,
+            inputs=[
+                "incidencias",
+                "params:columnas_fecha_incidencias",
+                "params:columnas_texto_incidencias"
+            ],
+            outputs="incidencias_clean",
+            name="limpiar_incidencias_node",
+        ),
+
     ])
